@@ -42,7 +42,7 @@ date_dag_run = datetime.datetime.strptime(output_name, "%Y%m%d")
 
 def main():
     """Extract Reddit data and load to CSV"""
-    validate_input(output_name)
+    validation_input(output_name)
     reddit_instance = api_connect()
     subreddit_posts_object = subreddit_posts(reddit_instance)
     extracted_data = extract_data(subreddit_posts_object)
