@@ -30,6 +30,37 @@ except Exception as e:
 file_path = f"s3://{BUCKET_NAME}/{output_name}.csv"
 role_string = f"arn:aws:iam::{ACCOUNT_ID}:role/{REDSHIFT_ROLE}"
 
+
+sql_create_table = """CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+                            id varchar PRIMARY KEY,
+                            title varchar(max),
+                            num_comments int,
+                            score int,
+                            author varchar(max),
+                            created_utc timestamp,
+                            url varchar(max),
+                            upvote_ratio float,
+                            over_18 bool,
+                            edited bool,
+                            spoiler bool,
+                            stickied bool
+                        );"""
+
+
+create_temp_table = """CREATE TEMP TABLE our_staging_table (LIKE {TABLE_NAME})"""
+sql_copy_to_temp ="""COPY our_staging_table FROM '{file_path}' iam role '{role_string}' IGNOREHEADER 1 DELIMITER ',' CSV;"""
+delete_from_table = """DELETE FROM {TABLE_NAME} USING our_staging_table WHERE {TABLE_NAME}.id = our_staging_table.id;"""
+insert_into_table = """INSERT INTO {TABLE_NAME} SELECT * FROM our_staging_table;"""
+drop_temp_table = """DROP TABLE our_staging_table;"""
+
+def main():
+    """Upload file form S3 to Redshift Table"""
+    validate_input(output_name)
+    rs_conn = connect_to_redshift()
+    load_data_to_redshift(rs_conn)
+
+
+
 def connect_to_redshift():
     try:
         rds_conn = redshift_connector.connect(
@@ -44,40 +75,15 @@ def connect_to_redshift():
         print(f"failed to connect to redshsift serverless. Error {e}")
         sys.exit(1)
 
-sql_create_table = sql.SQL(
-    """CREATE TABLE IF NOT EXISTS {table} (
-                            id varchar PRIMARY KEY,
-                            title varchar(max),
-                            num_comments int,
-                            score int,
-                            author varchar(max),
-                            created_utc timestamp,
-                            url varchar(max),
-                            upvote_ratio float,
-                            over_18 bool,
-                            edited bool,
-                            spoiler bool,
-                            stickied bool
-                        );"""
-).format(table=sql.Identifier(TABLE_NAME))
-
-create_temp_table = sql.SQL(
-    "CREATE TEMP TABLE our_staging_table (LIKE {table});"
-).format(table=sql.Identifier(TABLE_NAME))
-sql_copy_to_temp = sql.SQL(
-    "COPY our_staging_table FROM '{file_path}' iam role '{role_string}' IGNOREHEADER 1 DELIMITER ',' CSV;"
-)
-delete_from_table = sql.SQL(
-    "DELETE FROM {table} USING our_staging_table WHERE {table}.id = our_staging_table.id;"
-).format(table=sql.Identifier(TABLE_NAME))
-insert_into_table = sql.SQL(
-    "INSERT INTO {table} SELECT * FROM our_staging_table;"
-).format(table=sql.Identifier(TABLE_NAME))
-drop_temp_table = "DROP TABLE our_staging_table;"
-
-def main():
-    """Upload file form S3 to Redshift Table"""
-    validate_input(output_name)
-    rs_conn = connect_to_redshift()
-    load_data_into_redshift(rs_conn)
+def load_data_to_redshift(rds_conn):
+    with rds_conn:
+        curr = rds_conn.cursor()
+        curr.execute(sql_create_table)
+        curr.execute(create_temp_table)
+        curr.execute(sql_copy_to_temp)
+        curr.execute(delete_from_table)
+        curr.execute(insert_into_table)
+        curr.execute(drop_temp_table)
+        
+        rds_conn.commit()
 
