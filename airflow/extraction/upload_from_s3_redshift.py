@@ -87,3 +87,6 @@ def load_data_to_redshift(rds_conn):
         
         rds_conn.commit()
 
+
+if __name__ == "__main__":
+    main()
