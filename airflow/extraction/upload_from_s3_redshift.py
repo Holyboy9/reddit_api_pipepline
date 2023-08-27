@@ -56,8 +56,8 @@ drop_temp_table = """DROP TABLE our_staging_table;"""
 def main():
     """Upload file form S3 to Redshift Table"""
     validate_input(output_name)
-    rs_conn = connect_to_redshift()
-    load_data_to_redshift(rs_conn)
+    rds_conn = connect_to_redshift()
+    load_data_to_redshift(rds_conn)
 
 
 
