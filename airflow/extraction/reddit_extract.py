@@ -53,7 +53,7 @@ def main():
 def api_connect():
     """connect to reddit api"""
     try:
-        reddit = praw.reddit(
+        reddit = praw.Reddit(
             client_id = CLIENT_ID,
             client_secret = CLIENT_SECRET,
             user_agent = "my user agent"
@@ -70,6 +70,7 @@ def subreddit_posts(reddit_instance):
     try:
         subreddit = reddit_instance.subreddit("dataengineering")
         posts = subreddit.top(time_filter="day",limit=None)
+        return posts
         
     except Exception as e:
         print(f"There has been an issue.Error {e}")

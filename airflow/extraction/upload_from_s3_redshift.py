@@ -2,7 +2,7 @@ import configparser
 import pathlib
 import redshift_connector
 import sys
-from validation import validate_input
+from validation import validation_input
 from psycopg2 import sql
 
 
@@ -55,7 +55,7 @@ drop_temp_table = """DROP TABLE our_staging_table;"""
 
 def main():
     """Upload file form S3 to Redshift Table"""
-    validate_input(output_name)
+    validation_input(output_name)
     rds_conn = connect_to_redshift()
     load_data_to_redshift(rds_conn)
 
