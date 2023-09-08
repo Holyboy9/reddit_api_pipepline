@@ -67,7 +67,7 @@ def connect_to_redshift():
             host = HOST,
             database = DATABASE,
             user = USERNAME,
-            is_serverless=True,
+            is_serverless = True,
             serverless_acct_id = ACCOUNT_ID,
             serverless_work_group = REDSHIFT_SERVERLESS_WORKGROUP
             )
