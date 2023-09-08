@@ -15,6 +15,23 @@ provider "aws" {
   profile = "hb"
 }
 
+resource "aws_security_group" "serverless_security" {
+  name = "serverless_security"
+  ingress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    }
+}
+
 resource "aws_iam_role" "redshift_serverless_role" {
     name = "RedshiftLoadRule"
     managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"]
@@ -49,6 +66,7 @@ resource "aws_redshiftserverless_namespace" "Redshift" {
 resource "aws_redshiftserverless_workgroup" "aws_workgroup" {
   namespace_name = "reddit-space-09"
   workgroup_name = "reddit-workgroup-09"
+  security_group_ids = [aws_security_group.serverless_security.id]
 }
 
 
