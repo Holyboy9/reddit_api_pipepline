@@ -33,7 +33,7 @@ file_path = f"s3://{BUCKET_NAME}/{output_name}.csv"
 role_string = f"arn:aws:iam::{ACCOUNT_ID}:role/{REDSHIFT_ROLE}"
 
 
-sql_create_table = """CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+sql_create_table = f"""CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
                             id varchar PRIMARY KEY,
                             title varchar(max),
                             num_comments int,
@@ -49,10 +49,10 @@ sql_create_table = """CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
                         );"""
 
 
-create_temp_table = """CREATE TEMP TABLE our_staging_table (LIKE {TABLE_NAME})"""
-sql_copy_to_temp ="""COPY our_staging_table FROM '{file_path}' iam role '{role_string}' IGNOREHEADER 1 DELIMITER ',' CSV;"""
-delete_from_table = """DELETE FROM {TABLE_NAME} USING our_staging_table WHERE {TABLE_NAME}.id = our_staging_table.id;"""
-insert_into_table = """INSERT INTO {TABLE_NAME} SELECT * FROM our_staging_table;"""
+create_temp_table = f"""CREATE TEMP TABLE our_staging_table (LIKE {TABLE_NAME})"""
+sql_copy_to_temp = f"""COPY our_staging_table FROM '{file_path}' iam_role '{role_string}' IGNOREHEADER 1 DELIMITER ',' CSV;"""
+delete_from_table = f"""DELETE FROM {TABLE_NAME} USING our_staging_table WHERE {TABLE_NAME}.id = our_staging_table.id;"""
+insert_into_table = f"""INSERT INTO {TABLE_NAME} SELECT * FROM our_staging_table;"""
 drop_temp_table = """DROP TABLE our_staging_table;"""
 
 def main():
@@ -70,8 +70,8 @@ def connect_to_redshift():
             database = DATABASE,
             user = USERNAME,
             password = PASSWORD
-
             )
+        return rds_conn
     except Exception as e:
         print(f"failed to connect to redshsift serverless. Error {e}")
         sys.exit(1)
