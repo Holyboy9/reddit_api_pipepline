@@ -19,7 +19,9 @@ REDSHIFT_SERVERLESS_WORKGROUP = parser.get("aws_config","redshift_serverless_wor
 ACCOUNT_ID = parser.get("aws_config","account_id")
 HOST = parser.get("aws_config","aws_host")
 TABLE_NAME = "reddit"
-
+ACCESS_KEY = parser.get("aws_config","aws_access_key")
+SECRET_KEY = parser.get("aws_config","aws_secret_key")
+PASSWORD = parser.get("aws_config","admin_password")
 
 try:
     output_name = sys.argv[1]
@@ -67,9 +69,8 @@ def connect_to_redshift():
             host = HOST,
             database = DATABASE,
             user = USERNAME,
-            is_serverless = True,
-            serverless_acct_id = ACCOUNT_ID,
-            serverless_work_group = REDSHIFT_SERVERLESS_WORKGROUP
+            password = PASSWORD
+
             )
     except Exception as e:
         print(f"failed to connect to redshsift serverless. Error {e}")
